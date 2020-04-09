@@ -1,6 +1,6 @@
 use std::cmp::{Ord, Ordering};
 
-#[derive(Clone,Debug,PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Hsv {
     pub hue: f32,
     pub saturation: f32,
@@ -19,7 +19,7 @@ impl Hsv {
 
     pub fn to_rgb(&self) -> (f32, f32, f32) {
         let f = |n| {
-            let k = (n as f32 + self.hue/60.0) % 6.0;
+            let k = (n as f32 + self.hue / 60.0) % 6.0;
             let s = self.saturation;
             let v = self.value;
 
@@ -112,13 +112,37 @@ mod tests {
     #[test]
     fn hsv_rgb_test() {
         let hsv = Hsv::from_rgb_bytes(100, 200, 250);
-        assert_eq!(hsv.hue, 200f32, "conversion from rgb to hsv failed with hue: should've been 200, was {}", hsv.hue);
-        assert_eq!(hsv.saturation, 0.60, "conversion from rgb to hsv failed with saturation: should've been 0.60, was {}", hsv.saturation);
-        assert!((hsv.value - 0.98) < 0.001, "conversion from rgb to hsv failed with value: should've been 0.98, was {}", hsv.value);
+        assert_eq!(
+            hsv.hue, 200f32,
+            "conversion from rgb to hsv failed with hue: should've been 200, was {}",
+            hsv.hue
+        );
+        assert_eq!(
+            hsv.saturation, 0.60,
+            "conversion from rgb to hsv failed with saturation: should've been 0.60, was {}",
+            hsv.saturation
+        );
+        assert!(
+            (hsv.value - 0.98) < 0.001,
+            "conversion from rgb to hsv failed with value: should've been 0.98, was {}",
+            hsv.value
+        );
 
         let (r, g, b) = hsv.to_rgb_bytes();
-        assert_eq!(r, 100, "conversion from hsv to rgb failed with r: should've been 100, was {}", r);
-        assert_eq!(g, 200, "conversion from hsv to rgb failed with g: should've been 200, was {}", g);
-        assert_eq!(b, 250, "conversion from hsv to rgb failed with b: should've been 250, was {}", b);
+        assert_eq!(
+            r, 100,
+            "conversion from hsv to rgb failed with r: should've been 100, was {}",
+            r
+        );
+        assert_eq!(
+            g, 200,
+            "conversion from hsv to rgb failed with g: should've been 200, was {}",
+            g
+        );
+        assert_eq!(
+            b, 250,
+            "conversion from hsv to rgb failed with b: should've been 250, was {}",
+            b
+        );
     }
 }
