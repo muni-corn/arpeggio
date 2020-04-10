@@ -6,16 +6,16 @@ use std::fmt;
 /// the color named (in that order).
 #[derive(Debug)]
 pub struct Palette {
-    red: (Hsv, Hsv),
-    yellow: (Hsv, Hsv),
-    lime: (Hsv, Hsv),
-    aqua: (Hsv, Hsv),
-    blue: (Hsv, Hsv),
-    magenta: (Hsv, Hsv),
+    pub red: (Hsv, Hsv),
+    pub yellow: (Hsv, Hsv),
+    pub lime: (Hsv, Hsv),
+    pub aqua: (Hsv, Hsv),
+    pub blue: (Hsv, Hsv),
+    pub magenta: (Hsv, Hsv),
 
-    shades: Shades,
+    pub shades: Shades,
 
-    accent: (Hsv, Hsv),
+    pub accent: (Hsv, Hsv),
 }
 
 impl From<&[Hsv]> for Palette {
@@ -81,11 +81,11 @@ impl Display for Palette {
 }
 
 #[derive(Debug)]
-struct Shades {
-    black: Hsv,
-    silver: Hsv,
-    gray: Hsv,
-    white: Hsv,
+pub struct Shades {
+    pub black: Hsv,
+    pub silver: Hsv,
+    pub gray: Hsv,
+    pub white: Hsv,
 }
 
 impl From<&Hsv> for Shades {
@@ -93,10 +93,10 @@ impl From<&Hsv> for Shades {
         let black = Hsv {
             hue: median_hsv.hue,
             saturation: 0.3,
-            value: 0.1,
+            value: 0.05,
         };
         let gray = Hsv {
-            value: 0.4,
+            value: 0.2,
             ..black
         };
         let silver = Hsv {
