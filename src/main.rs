@@ -29,7 +29,7 @@ fn main() {
 
     // open the image
     println!("opening image");
-    let mut img = match image::io::Reader::open(&PathBuf::from(img_file)) {
+    let img = match image::io::Reader::open(&PathBuf::from(img_file)) {
         Ok(i) => match i.decode() {
             Ok(j) => j,
             Err(e) => {
@@ -43,15 +43,27 @@ fn main() {
         }
     };
 
-    println!("resizing image");
-    img = img.resize_exact(800, 500, image::imageops::FilterType::Triangle);
-
+    // collect the pixels, converting each to hsv.
+    // if the image is bigger than 800 pixels by 500, we step over extra pixels so that we only
+    // read a total of 400,000
     println!("getting pixels");
-    let px: Vec<_> = img.pixels().map(|p| { 
-        let hsv = Hsv::from(p.2);
-        hsv
-    }).collect();
-    
+    let px: Vec<_> = {
+        let all_px = img.pixels();
+        let img_px_count = {
+            let (w, h) = img.dimensions();
+            w * h
+        };
+        if img_px_count <= 800 * 500 {
+            all_px
+                .map(|p| Hsv::from(p.2))
+                .collect()
+        } else {
+            all_px
+                .step_by((img_px_count / (800 * 500)).try_into().unwrap())
+                .map(|p| Hsv::from(p.2))
+                .collect()
+        }
+    };
 
     // make the palette from the image
     println!("making colors");
