@@ -1,4 +1,9 @@
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Visitor, Error};
 use std::cmp::{Ord, Ordering};
+use std::fmt;
+use crate::errors::{ArpeggioError, BasicError};
+use std::convert::{TryFrom, TryInto};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Hsv {
@@ -77,11 +82,42 @@ impl Hsv {
             value,
         }
     }
+
+    fn from_rgb_string(mut s: &str) -> Result<Self, ArpeggioError> {
+        if s.len() != 7 || !s.starts_with('#') {
+            Err(ArpeggioError::from(BasicError {
+                message: format!("colors need to be in the form of #rrggbb, not {}", s),
+            }))
+        } else {
+            s = &s[1..];
+            let number = s.parse::<i32>()?;
+            let r: u8 = ((number >> 16) & 0xff).try_into()?;
+            let g: u8 = ((number >> 8) & 0xff).try_into()?;
+            let b: u8 = ((number) & 0xff).try_into()?;
+            Ok(Self::from_rgb_bytes(r, g, b))
+        }
+    }
 }
 
 impl From<image::Rgba<u8>> for Hsv {
     fn from(rgba: image::Rgba<u8>) -> Self {
         Self::from_rgb_bytes(rgba[0], rgba[1], rgba[2])
+    }
+}
+
+impl TryFrom<&str> for Hsv {
+    type Error = ArpeggioError;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Self::from_rgb_string(s)
+    }
+}
+
+impl TryFrom<String> for Hsv {
+    type Error = ArpeggioError;
+
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        Self::from_rgb_string(&s)
     }
 }
 
@@ -144,5 +180,42 @@ mod tests {
             "conversion from hsv to rgb failed with b: should've been 250, was {}",
             b
         );
+    }
+}
+
+impl Serialize for Hsv {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(&self.to_hex_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for Hsv {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let visitor = HsvVisitor;
+        let s = deserializer.deserialize_string(visitor)?;
+        Self::from_rgb_string(&s).map_err(Error::custom)
+    }
+}
+
+struct HsvVisitor;
+
+impl Visitor<'_> for HsvVisitor {
+    type Value = String;
+
+    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "a color, like #rrggbb")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> 
+    where
+        E: Error,
+    {
+        Ok(String::from(v))
     }
 }
