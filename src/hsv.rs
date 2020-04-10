@@ -112,18 +112,18 @@ mod tests {
     #[test]
     fn hsv_rgb_test() {
         let hsv = Hsv::from_rgb_bytes(100, 200, 250);
-        assert_eq!(
-            hsv.hue, 200f32,
+        assert!(
+            (hsv.hue - 200.0).abs() < 0.001,
             "conversion from rgb to hsv failed with hue: should've been 200, was {}",
             hsv.hue
         );
-        assert_eq!(
-            hsv.saturation, 0.60,
+        assert!(
+            (hsv.saturation - 0.6).abs() < 0.001,
             "conversion from rgb to hsv failed with saturation: should've been 0.60, was {}",
             hsv.saturation
         );
         assert!(
-            (hsv.value - 0.98) < 0.001,
+            (hsv.value - 0.98).abs() < 0.001,
             "conversion from rgb to hsv failed with value: should've been 0.98, was {}",
             hsv.value
         );

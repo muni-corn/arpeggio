@@ -1,6 +1,6 @@
 use crate::hsv::Hsv;
-use std::fmt::{Display, Formatter};
 use std::fmt;
+use std::fmt::{Display, Formatter};
 
 /// Palette is a collection of colors. Each field is a tuple of two; a dark and light variant of
 /// the color named (in that order).
@@ -45,7 +45,7 @@ impl From<&[Hsv]> for Palette {
             blue,
             magenta,
             shades,
-            accent
+            accent,
         }
     }
 }
@@ -144,8 +144,16 @@ fn get_average_color(vec: &[Hsv]) -> (Hsv, Hsv) {
 }
 
 fn get_accent(median_hsv: &Hsv) -> (Hsv, Hsv) {
-    let dark = Hsv { hue: (median_hsv.hue + 60.0) % 360.0, saturation: 0.6, value: 0.7 };
-    let light = Hsv { saturation: 0.7, value: 1.0, ..dark };
+    let dark = Hsv {
+        hue: (median_hsv.hue + 60.0) % 360.0,
+        saturation: 0.6,
+        value: 0.7,
+    };
+    let light = Hsv {
+        saturation: 0.7,
+        value: 1.0,
+        ..dark
+    };
 
     (dark, light)
 }
