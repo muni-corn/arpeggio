@@ -1,13 +1,13 @@
+mod config;
 mod hsv;
 mod io;
 mod palette;
+mod errors;
 
-use hsv::Hsv;
-use image::GenericImageView;
-use std::convert::TryInto;
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
+use std::process;
 
 fn main() {
     let config_dir = dirs::config_dir().expect("couldn't get config directory");
@@ -18,63 +18,78 @@ fn main() {
     }
 
     let seq_path = dir_path.join("sequences");
+    let palettes_path = dir_path.join("palettes.json");
+
+    let mut config = if palettes_path.exists() {
+        read_config(&palettes_path)
+    } else {
+        Default::default()
+    };
 
     let img_file = match env::args().nth(1) {
         Some(f) => f,
         None => {
             println!("an image file is required");
-            return;
-        }
-    };
-
-    // open the image
-    println!("opening image");
-    let img = match image::io::Reader::open(&PathBuf::from(img_file)) {
-        Ok(i) => match i.decode() {
-            Ok(j) => j,
-            Err(e) => {
-                println!("couldn't decode image: {}", e);
-                return;
-            }
-        },
-        Err(e) => {
-            println!("couldn't open image: {}", e);
-            return;
-        }
-    };
-
-    // collect the pixels, converting each to hsv.
-    // if the image is bigger than 800 pixels by 500, we step over extra pixels so that we only
-    // read a total of 400,000
-    println!("getting pixels");
-    let px: Vec<_> = {
-        let all_px = img.pixels();
-        let img_px_count = {
-            let (w, h) = img.dimensions();
-            w * h
-        };
-        if img_px_count <= 800 * 500 {
-            all_px
-                .map(|p| Hsv::from(p.2))
-                .collect()
-        } else {
-            all_px
-                .step_by((img_px_count / (800 * 500)).try_into().unwrap())
-                .map(|p| Hsv::from(p.2))
-                .collect()
+            return
         }
     };
 
     // make the palette from the image
-    println!("making colors");
-    let palette = palette::Palette::from(&px[..]);
+    let palette = match palette::Palette::from_file(&Path::new(&img_file)) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("couldn't make palette from image: {}", e);
+            return
+        }
+    };
 
-    // write out the colors to a sequences file
-    println!("writing sequences");
-    if let Err(e) = io::write_sequences(&palette, &seq_path) {
-        eprintln!("couldn't write sequences: {}", e);
-        return;
-    }
+    config.set_palette(img_file, palette.clone());
+
+    write_sequences(&seq_path, &palette);
+
+    write_config(&palettes_path, config);
 
     println!("done!");
+}
+
+fn read_config(path: &Path) -> config::Config {
+    let raw = match fs::read_to_string(path) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("couldn't read config: {}", e);
+            process::exit(1);
+        }
+    };
+
+    match serde_json::from_str::<config::Config>(&raw) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("couldn't parse config: {}", e);
+            process::exit(1);
+        }
+    }
+}
+
+fn write_sequences(path: &Path, palette: &palette::Palette) {
+    // write out the colors to a sequences file
+    println!("writing sequences");
+    if let Err(e) = io::write_sequences(palette, path) {
+        eprintln!("couldn't write sequences: {}", e);
+        process::exit(1);
+    }
+}
+
+fn write_config(path: &Path, config: config::Config) {
+    let serialized_config = match serde_json::to_string(&config) {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("couldn't serialize config: {}", e);
+            process::exit(1);
+        }
+    };
+
+    if let Err(e) = fs::write(path, serialized_config) {
+        eprintln!("couldn't write palette: {}", e);
+        process::exit(1);
+    }
 }

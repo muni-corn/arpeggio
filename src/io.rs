@@ -1,5 +1,5 @@
 use crate::palette::Palette;
-use std::error::Error;
+use crate::errors::ArpeggioError;
 use std::fs;
 use std::path::Path;
 
@@ -12,27 +12,27 @@ fn to_esc_sequences(p: &Palette) -> String {
     ));
     s.push_str(&format!(
         "\u{001b}]4;1;{}\u{001b}\\",
-        p.red.0.to_hex_string()
+        p.maroon.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;2;{}\u{001b}\\",
-        p.yellow.0.to_hex_string()
+        p.olive.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;3;{}\u{001b}\\",
-        p.lime.0.to_hex_string()
+        p.green.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;4;{}\u{001b}\\",
-        p.aqua.0.to_hex_string()
+        p.teal.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;5;{}\u{001b}\\",
-        p.blue.0.to_hex_string()
+        p.navy.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;6;{}\u{001b}\\",
-        p.magenta.0.to_hex_string()
+        p.purple.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;7;{}\u{001b}\\",
@@ -44,27 +44,27 @@ fn to_esc_sequences(p: &Palette) -> String {
     ));
     s.push_str(&format!(
         "\u{001b}]4;9;{}\u{001b}\\",
-        p.red.1.to_hex_string()
+        p.red.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;10;{}\u{001b}\\",
-        p.yellow.1.to_hex_string()
+        p.yellow.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;11;{}\u{001b}\\",
-        p.lime.1.to_hex_string()
+        p.lime.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;12;{}\u{001b}\\",
-        p.aqua.1.to_hex_string()
+        p.aqua.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;13;{}\u{001b}\\",
-        p.blue.1.to_hex_string()
+        p.blue.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;14;{}\u{001b}\\",
-        p.magenta.1.to_hex_string()
+        p.magenta.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;15;{}\u{001b}\\",
@@ -111,7 +111,7 @@ fn to_esc_sequences(p: &Palette) -> String {
     s
 }
 
-pub fn write_sequences(p: &Palette, file: &Path) -> Result<(), Box<dyn Error>> {
+pub fn write_sequences(p: &Palette, file: &Path) -> Result<(), ArpeggioError> {
     fs::write(file, to_esc_sequences(p))?;
 
     Ok(())
