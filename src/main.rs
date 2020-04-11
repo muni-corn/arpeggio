@@ -18,7 +18,7 @@ fn main() {
     }
 
     let seq_path = dir_path.join("sequences");
-    let palettes_path = dir_path.join("palettes.json");
+    let palettes_path = dir_path.join("palettes.toml");
 
     let mut config = if palettes_path.exists() {
         read_config(&palettes_path)
@@ -61,7 +61,7 @@ fn read_config(path: &Path) -> config::Config {
         }
     };
 
-    match serde_json::from_str::<config::Config>(&raw) {
+    match toml::from_str::<config::Config>(&raw) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("couldn't parse config: {}", e);
@@ -80,7 +80,7 @@ fn write_sequences(path: &Path, palette: &palette::Palette) {
 }
 
 fn write_config(path: &Path, config: config::Config) {
-    let serialized_config = match serde_json::to_string(&config) {
+    let serialized_config = match toml::to_string(&config) {
         Ok(s) => s,
         Err(e) => {
             eprintln!("couldn't serialize config: {}", e);

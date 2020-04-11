@@ -8,7 +8,7 @@ fn to_esc_sequences(p: &Palette) -> String {
 
     s.push_str(&format!(
         "\u{001b}]4;0;{}\u{001b}\\",
-        p.shades.black.to_hex_string()
+        p.black.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;1;{}\u{001b}\\",
@@ -36,11 +36,11 @@ fn to_esc_sequences(p: &Palette) -> String {
     ));
     s.push_str(&format!(
         "\u{001b}]4;7;{}\u{001b}\\",
-        p.shades.silver.to_hex_string()
+        p.silver.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;8;{}\u{001b}\\",
-        p.shades.gray.to_hex_string()
+        p.gray.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;9;{}\u{001b}\\",
@@ -68,44 +68,44 @@ fn to_esc_sequences(p: &Palette) -> String {
     ));
     s.push_str(&format!(
         "\u{001b}]4;15;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
 
     s.push_str(&format!(
         "\u{001b}]10;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]11;{}\u{001b}\\",
-        p.shades.black.to_hex_string()
+        p.black.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]12;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]13;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]17;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]19;{}\u{001b}\\",
-        p.shades.black.to_hex_string()
+        p.black.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;232;{}\u{001b}\\",
-        p.shades.black.to_hex_string()
+        p.black.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;256;{}\u{001b}\\",
-        p.shades.white.to_hex_string()
+        p.white.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]708;{}\u{001b}\\",
-        p.shades.black.to_hex_string()
+        p.black.to_hex_string()
     ));
 
     s
