@@ -25,7 +25,10 @@ pub struct Palette {
     pub blue: Hsv,
     pub magenta: Hsv,
 
-    pub shades: Shades,
+    pub black: Hsv,
+    pub silver: Hsv,
+    pub gray: Hsv,
+    pub white: Hsv,
 
     pub dark_accent: Hsv,
     pub accent: Hsv,
@@ -50,7 +53,7 @@ impl Palette {
 
         let median_hsv = &px[px_len / 2];
 
-        let shades = Shades::from(median_hsv);
+        let (black, silver, gray, white) = get_shades(median_hsv);
         let (dark_accent, accent) = get_accent(median_hsv);
 
         Ok(Self {
@@ -68,7 +71,11 @@ impl Palette {
             blue,
             magenta,
 
-            shades,
+            black,
+            silver,
+            gray,
+            white,
+
             dark_accent,
             accent,
         })
@@ -77,25 +84,25 @@ impl Palette {
 
 impl Display for Palette {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "black:       {}", self.shades.black.to_hex_string())?;
+        writeln!(f, "black:       {}", self.black.to_hex_string())?;
         writeln!(f, "maroon:      {}", self.red.to_hex_string())?;
         writeln!(f, "olive:       {}", self.yellow.to_hex_string())?;
         writeln!(f, "green:       {}", self.lime.to_hex_string())?;
         writeln!(f, "teal:        {}", self.aqua.to_hex_string())?;
         writeln!(f, "navy:        {}", self.blue.to_hex_string())?;
         writeln!(f, "purple:      {}", self.magenta.to_hex_string())?;
-        writeln!(f, "silver:      {}", self.shades.silver.to_hex_string())?;
+        writeln!(f, "silver:      {}", self.silver.to_hex_string())?;
 
         writeln!(f)?;
 
-        writeln!(f, "gray:        {}", self.shades.gray.to_hex_string())?;
+        writeln!(f, "gray:        {}", self.gray.to_hex_string())?;
         writeln!(f, "red:         {}", self.red.to_hex_string())?;
         writeln!(f, "yellow:      {}", self.yellow.to_hex_string())?;
         writeln!(f, "lime:        {}", self.lime.to_hex_string())?;
         writeln!(f, "aqua:        {}", self.aqua.to_hex_string())?;
         writeln!(f, "blue:        {}", self.blue.to_hex_string())?;
         writeln!(f, "magenta:     {}", self.magenta.to_hex_string())?;
-        writeln!(f, "white:       {}", self.shades.white.to_hex_string())?;
+        writeln!(f, "white:       {}", self.white.to_hex_string())?;
 
         writeln!(f)?;
 
@@ -105,42 +112,29 @@ impl Display for Palette {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Shades {
-    pub black: Hsv,
-    pub silver: Hsv,
-    pub gray: Hsv,
-    pub white: Hsv,
-}
+/// Returns (black, silver, gray, white)
+fn get_shades(median_hsv: &Hsv) -> (Hsv, Hsv, Hsv, Hsv) {
+    let black = Hsv {
+        hue: median_hsv.hue,
+        saturation: 0.3,
+        value: 0.05,
+    };
+    let gray = Hsv {
+        value: 0.2,
+        ..black
+    };
+    let silver = Hsv {
+        hue: median_hsv.hue,
+        saturation: 0.1,
+        value: 0.7,
+    };
+    let white = Hsv {
+        value: 1.0,
 
-impl From<&Hsv> for Shades {
-    fn from(median_hsv: &Hsv) -> Self {
-        let black = Hsv {
-            hue: median_hsv.hue,
-            saturation: 0.3,
-            value: 0.05,
-        };
-        let gray = Hsv {
-            value: 0.2,
-            ..black
-        };
-        let silver = Hsv {
-            hue: median_hsv.hue,
-            saturation: 0.1,
-            value: 0.7,
-        };
-        let white = Hsv {
-            value: 1.0,
+        ..silver
+    };
 
-            ..silver
-        };
-        Self {
-            black,
-            silver,
-            gray,
-            white,
-        }
-    }
+    (black, silver, gray, white)
 }
 
 /// Returns the average color of the colors in the Vec, returning a dark and light variant (in

@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Config {
+    // #[serde(serialize_with = "toml::ser::tables_last")]
     palettes: HashMap<String, Palette>,
 }
 
