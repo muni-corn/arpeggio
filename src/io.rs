@@ -1,5 +1,5 @@
-use crate::palette::Palette;
 use crate::errors::ArpeggioError;
+use crate::palette::Palette;
 use std::fs;
 use std::path::Path;
 
@@ -42,10 +42,7 @@ fn to_esc_sequences(p: &Palette) -> String {
         "\u{001b}]4;8;{}\u{001b}\\",
         p.gray.to_hex_string()
     ));
-    s.push_str(&format!(
-        "\u{001b}]4;9;{}\u{001b}\\",
-        p.red.to_hex_string()
-    ));
+    s.push_str(&format!("\u{001b}]4;9;{}\u{001b}\\", p.red.to_hex_string()));
     s.push_str(&format!(
         "\u{001b}]4;10;{}\u{001b}\\",
         p.yellow.to_hex_string()

@@ -1,9 +1,9 @@
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::{Visitor, Error};
-use std::cmp::{Ord, Ordering};
-use std::fmt;
 use crate::errors::{ArpeggioError, BasicError};
+use serde::de::{Error, Visitor};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::cmp::{Ord, Ordering};
 use std::convert::{TryFrom, TryInto};
+use std::fmt;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Hsv {
@@ -213,7 +213,7 @@ impl Visitor<'_> for HsvVisitor {
         write!(f, "a color, like #rrggbb")
     }
 
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E> 
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
     where
         E: Error,
     {
