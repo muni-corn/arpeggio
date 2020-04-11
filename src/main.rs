@@ -20,8 +20,8 @@ fn main() {
     let seq_path = dir_path.join("sequences");
     let palettes_path = dir_path.join("palettes.toml");
 
-    let mut config = if palettes_path.exists() {
-        read_config(&palettes_path)
+    let mut palettes = if palettes_path.exists() {
+        read_palettes(&palettes_path)
     } else {
         Default::default()
     };
@@ -43,28 +43,28 @@ fn main() {
         }
     };
 
-    config.set_palette(img_file, palette.clone());
+    palettes.insert(img_file, palette.clone());
 
     write_sequences(&seq_path, &palette);
 
-    write_config(&palettes_path, config);
+    write_palettes(&palettes_path, palettes);
 
     println!("done!");
 }
 
-fn read_config(path: &Path) -> config::Config {
-    let raw = match fs::read_to_string(path) {
-        Ok(s) => s,
+fn read_palettes(path: &Path) -> config::Palettes {
+    let raw = match fs::read(path) {
+        Ok(b) => b,
         Err(e) => {
-            eprintln!("couldn't read config: {}", e);
+            eprintln!("couldn't read palettes: {}", e);
             process::exit(1);
         }
     };
 
-    match toml::from_str::<config::Config>(&raw) {
+    match toml::from_slice::<config::Palettes>(&raw) {
         Ok(c) => c,
         Err(e) => {
-            eprintln!("couldn't parse config: {}", e);
+            eprintln!("couldn't parse palettes: {}", e);
             process::exit(1);
         }
     }
@@ -79,17 +79,17 @@ fn write_sequences(path: &Path, palette: &palette::Palette) {
     }
 }
 
-fn write_config(path: &Path, config: config::Config) {
-    let serialized_config = match toml::to_string(&config) {
+fn write_palettes(path: &Path, palettes: config::Palettes) {
+    let serialized = match toml::to_string(&palettes) {
         Ok(s) => s,
         Err(e) => {
-            eprintln!("couldn't serialize config: {}", e);
+            eprintln!("couldn't serialize palettes: {}", e);
             process::exit(1);
         }
     };
 
-    if let Err(e) = fs::write(path, serialized_config) {
-        eprintln!("couldn't write palette: {}", e);
+    if let Err(e) = fs::write(path, serialized) {
+        eprintln!("couldn't write palettes: {}", e);
         process::exit(1);
     }
 }

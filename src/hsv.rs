@@ -90,7 +90,7 @@ impl Hsv {
             }))
         } else {
             s = &s[1..];
-            let number = s.parse::<i32>()?;
+            let number = i32::from_str_radix(s, 16)?;
             let r: u8 = ((number >> 16) & 0xff).try_into()?;
             let g: u8 = ((number >> 8) & 0xff).try_into()?;
             let b: u8 = ((number) & 0xff).try_into()?;
@@ -198,7 +198,7 @@ impl<'de> Deserialize<'de> for Hsv {
         D: Deserializer<'de>,
     {
         let visitor = HsvVisitor;
-        let s = deserializer.deserialize_string(visitor)?;
+        let s = deserializer.deserialize_str(visitor)?;
         Self::from_rgb_string(&s).map_err(Error::custom)
     }
 }
