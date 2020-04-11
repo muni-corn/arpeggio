@@ -34,6 +34,7 @@ impl Hsv {
         (f(5), f(3), f(1))
     }
 
+    #[allow(dead_code)]
     pub fn to_rgb_bytes(&self) -> (u8, u8, u8) {
         let rgb = self.to_rgb();
 
