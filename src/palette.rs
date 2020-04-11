@@ -2,10 +2,10 @@ use crate::errors::ArpeggioError;
 use crate::hsv::Hsv;
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
+use std::convert::TryInto;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
-use std::convert::TryInto;
 
 /// Palette is a collection of colors. Each field is a tuple of two; a dark and light variant of
 /// the color named (in that order).
@@ -41,7 +41,7 @@ impl Palette {
         let mut px = raw_pixels;
         px.sort_unstable();
 
-        println!("making colors");
+        println!("making colors for {}...", file_path.display());
 
         let px_len = px.len();
         let (maroon, red) = get_average_color(&px[0..px_len / 6]);
@@ -55,6 +55,8 @@ impl Palette {
 
         let (black, silver, gray, white) = get_shades(median_hsv);
         let (dark_accent, accent) = get_accent(median_hsv);
+
+        println!("palette generated for {}", file_path.display());
 
         Ok(Self {
             maroon,
@@ -179,7 +181,7 @@ fn get_accent(median_hsv: &Hsv) -> (Hsv, Hsv) {
 
 fn get_pixels_from_file(file: &Path) -> Result<Vec<Hsv>, ArpeggioError> {
     // open the image
-    println!("opening image");
+    println!("opening {}...", file.display());
     let img = match image::io::Reader::open(&PathBuf::from(file)) {
         Ok(i) => match i.decode() {
             Ok(j) => j,
@@ -197,7 +199,7 @@ fn get_pixels_from_file(file: &Path) -> Result<Vec<Hsv>, ArpeggioError> {
     // collect the pixels, converting each to hsv.
     // if the image is bigger than 800 pixels by 500, we step over extra pixels so that we only
     // read a total of 400,000
-    println!("getting pixels");
+    println!("getting pixels for {}...", file.display());
 
     let all_px = img.pixels();
     let img_px_count = {
