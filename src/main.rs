@@ -7,7 +7,7 @@ mod palette;
 
 use std::cmp::Ordering;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process;
 
 fn main() {
@@ -131,6 +131,7 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
         println!("forcing!");
     }
 
+    // run all picture processing
     for file in &flags.image_files {
         // if palette is already made, skip it (unless forcing)
         if !flags.force && palettes.get(file).is_some() {
@@ -139,16 +140,16 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
         }
 
         // make the palette from the image
-        let palette = match palette::Palette::from_file(&Path::new(&file)) {
+        let palette = match palette::Palette::from_file(PathBuf::from(file)) {
             Ok(p) => p,
             Err(e) => {
-                let error_str = format!(r#""{}": {}"#, file, e);
+                let error_str = format!("{}", e);
                 errors.push(error_str);
                 continue;
             }
         };
 
-        palettes.insert(file.clone(), palette.clone());
+        palettes.insert(palette.file_path.display().to_string(), palette.clone());
     }
 
     if errors.is_empty() {
@@ -171,7 +172,7 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
 
         println!("\neverything else went smoothly");
     }
-    
+
     // if only file was passed in, display a suggestion
     if flags.image_files.len() == 1 && !flags.set && !flags.force {
         println!("\ndid you mean to --set? or --force? maybe --delete?");
