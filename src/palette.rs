@@ -1,4 +1,4 @@
-use crate::errors::ArpeggioError;
+use crate::errors::{ArpeggioError, ArpeggioFileError};
 use crate::hsv::Hsv;
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
@@ -11,6 +11,9 @@ use std::path::{Path, PathBuf};
 /// the color named (in that order).
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Palette {
+    #[serde(skip)]
+    pub file_path: PathBuf,
+
     pub maroon: Hsv,
     pub olive: Hsv,
     pub green: Hsv,
@@ -35,8 +38,16 @@ pub struct Palette {
 }
 
 impl Palette {
-    pub fn from_file(file_path: &Path) -> Result<Self, ArpeggioError> {
-        let raw_pixels = get_pixels_from_file(file_path)?;
+    pub fn from_file(file_path: PathBuf) -> Result<Self, ArpeggioFileError<ArpeggioError>> {
+        let raw_pixels = match get_pixels_from_file(&file_path) {
+            Ok(p) => p,
+            Err(e) => {
+                return Err(ArpeggioFileError {
+                    file_path: file_path.display().to_string(),
+                    error: e,
+                })
+            }
+        };
 
         let mut px = raw_pixels;
         px.sort_unstable();
@@ -59,6 +70,8 @@ impl Palette {
         println!("palette generated for {}", file_path.display());
 
         Ok(Self {
+            file_path,
+
             maroon,
             olive,
             green,

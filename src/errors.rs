@@ -72,3 +72,14 @@ impl fmt::Display for BasicError {
         write!(f, "arpeggio came across a problem: {}", self.message)
     }
 }
+
+pub struct ArpeggioFileError<E: std::error::Error> {
+    pub file_path: String,
+    pub error: E,
+}
+
+impl<E: std::error::Error> fmt::Display for ArpeggioFileError<E> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "`{}`: {}", self.file_path, self.error)
+    }
+}
