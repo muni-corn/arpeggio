@@ -36,7 +36,6 @@ fn main() {
         Default::default()
     };
 
-    // let seq_path = dir_path.join("sequences");
 
     if flags.delete {
         delete_palettes(&flags.image_files, &mut palettes);
@@ -47,7 +46,7 @@ fn main() {
             match flags.image_files.len().cmp(&1) {
                 Ordering::Equal => {
                     let wallpaper = &flags.image_files[0]; // should be safe, since len is guaranteed to be 1 here
-                    set_colors(wallpaper.clone(), &palettes);
+                    set_colors(dir_path, wallpaper.clone(), &palettes);
                 }
                 Ordering::Greater => {
                     println!("warning: multiple image files were passed using --set.");
@@ -67,7 +66,7 @@ fn main() {
     write_palettes(&palettes_path, palettes);
 }
 
-fn read_palettes(path: &Path) -> config::Palettes {
+fn read_palettes<P: AsRef<Path>>(path: P) -> config::Palettes {
     let raw = match fs::read(path) {
         Ok(b) => b,
         Err(e) => {
@@ -86,16 +85,16 @@ fn read_palettes(path: &Path) -> config::Palettes {
 }
 
 #[allow(dead_code)]
-fn write_sequences(path: &Path, palette: &palette::Palette) {
+fn write_sequences<P: AsRef<Path>>(to: P, palette: &palette::Palette) {
     // write out the colors to a sequences file
     println!("writing sequences");
-    if let Err(e) = io::write_sequences(palette, path) {
+    if let Err(e) = io::write_sequences(palette, to) {
         eprintln!("couldn't write sequences: {}", e);
         process::exit(1);
     }
 }
 
-fn write_palettes(path: &Path, palettes: config::Palettes) {
+fn write_palettes<P: AsRef<Path>>(path: P, palettes: config::Palettes) {
     let serialized = match toml::to_string(&palettes) {
         Ok(s) => s,
         Err(e) => {
@@ -104,12 +103,12 @@ fn write_palettes(path: &Path, palettes: config::Palettes) {
         }
     };
 
-    if let Err(e) = fs::write(path, serialized) {
+    if let Err(e) = fs::write(&path, serialized) {
         eprintln!("couldn't write palettes: {}", e);
         process::exit(1);
     }
 
-    println!("palettes saved to {}", path.display());
+    println!("palettes saved to {}", path.as_ref().display());
 }
 
 fn delete_palettes(image_files: &[String], palettes: &mut config::Palettes) {
@@ -125,7 +124,7 @@ fn delete_palettes(image_files: &[String], palettes: &mut config::Palettes) {
 fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
     // keep track of any errors during the process. we do this so that any errors don't completely
     // stop the program, causing any remaining images to be skipped without trying.
-    let mut errors: Vec<String> = Vec::new();
+    let mut errors = Vec::new();
 
     if flags.force {
         println!("forcing!");
@@ -149,7 +148,7 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
             }
         };
 
-        palettes.insert(palette.file_path.display().to_string(), palette.clone());
+        palettes.insert(palette.file_path.clone(), palette.clone());
     }
 
     if errors.is_empty() {
@@ -162,6 +161,11 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
         for e in errors {
             eprintln!("\t{}", e);
         }
+
+        // if only one file was passed in, display a suggestion
+        if flags.image_files.len() == 1 && !flags.set && !flags.force {
+            println!("\ndid you mean to --set? or --force? maybe --delete?");
+        }
     } else {
         // some errors
         eprintln!("there were some errors during palette creation:");
@@ -172,13 +176,9 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
 
         println!("\neverything else went smoothly");
     }
-
-    // if only file was passed in, display a suggestion
-    if flags.image_files.len() == 1 && !flags.set && !flags.force {
-        println!("\ndid you mean to --set? or --force? maybe --delete?");
-    }
 }
 
-fn set_colors(wallpaper: String, palettes: &config::Palettes) {
-    unimplemented!()
+fn set_colors<P: AsRef<Path>>(dir_path: P, wallpaper_path: String, palettes: &config::Palettes) {
+    let seq_path = dir_path.as_ref().join("sequences");
+    write_sequences(seq_path, &palettes[&wallpaper_path]);
 }

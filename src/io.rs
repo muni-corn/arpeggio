@@ -108,8 +108,8 @@ fn to_esc_sequences(p: &Palette) -> String {
     s
 }
 
-pub fn write_sequences(p: &Palette, file: &Path) -> Result<(), ArpeggioError> {
-    fs::write(file, to_esc_sequences(p))?;
+pub fn write_sequences<P: AsRef<Path>>(p: &Palette, to: P) -> Result<(), ArpeggioError> {
+    fs::write(to, to_esc_sequences(p))?;
 
     Ok(())
 }
