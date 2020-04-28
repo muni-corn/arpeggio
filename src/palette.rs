@@ -5,14 +5,14 @@ use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 /// Palette is a collection of colors. Each field is a tuple of two; a dark and light variant of
 /// the color named (in that order).
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Palette {
     #[serde(skip)]
-    pub file_path: PathBuf,
+    pub file_path: String,
 
     pub maroon: Hsv,
     pub olive: Hsv,
@@ -38,39 +38,54 @@ pub struct Palette {
 }
 
 impl Palette {
-    pub fn from_file(file_path: PathBuf) -> Result<Self, ArpeggioFileError<ArpeggioError>> {
-        let raw_pixels = match get_pixels_from_file(&file_path) {
+    pub fn from_file<P: AsRef<Path>>(file_path: P) -> Result<Self, ArpeggioFileError<ArpeggioError>> {
+        println!("starting palette generation for {}", file_path.as_ref().display());
+        let mut raw_pixels = match get_pixels_from_file(&file_path) {
             Ok(p) => p,
             Err(e) => {
                 return Err(ArpeggioFileError {
-                    file_path: file_path.display().to_string(),
+                    file_path: file_path.as_ref().display().to_string(),
                     error: e,
                 })
             }
         };
 
+        // remove pixels without enough color, pixels too dark, or pixels too bright
+        println!("\tfiltering colors");
+        raw_pixels.retain(|c| c.saturation > 0.25 && c.value > 0.1 && c.value < 0.9);
+
+
         let mut px = raw_pixels;
+        println!("\tsorting colors");
         px.sort_unstable();
 
-        println!("making colors for {}...", file_path.display());
+        println!("\tmaking palette");
 
         let px_len = px.len();
-        let (maroon, red) = get_average_color(&px[0..px_len / 6]);
-        let (olive, yellow) = get_average_color(&px[px_len / 6..px_len * 2 / 6]);
-        let (green, lime) = get_average_color(&px[px_len * 2 / 6..px_len * 3 / 6]);
-        let (teal, aqua) = get_average_color(&px[px_len * 3 / 6..px_len * 4 / 6]);
-        let (navy, blue) = get_average_color(&px[px_len * 4 / 6..px_len * 5 / 6]);
-        let (purple, magenta) = get_average_color(&px[px_len * 5 / 6..px_len]);
+
+        let reddishes = &px[0..px_len / 6];
+        let yellowishes = &px[px_len / 6..px_len * 2 / 6];
+        let greenishes=  &px[px_len * 2 / 6..px_len * 3 / 6];
+        let tealishes = &px[px_len * 3 / 6..px_len * 4 / 6];
+        let bluishes = &px[px_len * 4 / 6..px_len * 5 / 6];
+        let purplishes = &px[px_len * 5 / 6..px_len];
+
+        let (maroon, red) = get_average_color(reddishes);
+        let (olive, yellow) = get_average_color(yellowishes);
+        let (green, lime) = get_average_color(greenishes);
+        let (teal, aqua) = get_average_color(tealishes);
+        let (navy, blue) = get_average_color(bluishes);
+        let (purple, magenta) = get_average_color(purplishes);
 
         let median_hsv = &px[px_len / 2];
 
         let (black, silver, gray, white) = get_shades(median_hsv);
         let (dark_accent, accent) = get_accent(median_hsv);
 
-        println!("palette generated for {}", file_path.display());
+        println!("\tpalette generated");
 
         Ok(Self {
-            file_path,
+            file_path: String::from(file_path.as_ref().to_str().unwrap()),
 
             maroon,
             olive,
@@ -129,15 +144,18 @@ impl Display for Palette {
 
 /// Returns (black, silver, gray, white)
 fn get_shades(median_hsv: &Hsv) -> (Hsv, Hsv, Hsv, Hsv) {
+    // blacks
     let black = Hsv {
         hue: median_hsv.hue,
         saturation: 0.3,
         value: 0.05,
     };
     let gray = Hsv {
-        value: 0.2,
+        value: 0.15,
         ..black
     };
+
+    // whites
     let silver = Hsv {
         hue: median_hsv.hue,
         saturation: 0.1,
@@ -155,26 +173,43 @@ fn get_shades(median_hsv: &Hsv) -> (Hsv, Hsv, Hsv, Hsv) {
 /// Returns the average color of the colors in the Vec, returning a dark and light variant (in
 /// that order).
 fn get_average_color(vec: &[Hsv]) -> (Hsv, Hsv) {
-    let mut avg_h = 0f32;
+    let mut avg_hx = 0f32;
+    let mut avg_hy = 0f32;
     let mut avg_s = 0f32;
+    let mut avg_v = 0f32;
 
     for (i, hsv) in vec.iter().enumerate() {
         let i = i as f32; // re-assign to an f32 version of itself
-        avg_h = (avg_h * i / (i + 1.0)) + (hsv.hue / (i + 1.0));
+        let (x, y) = (hsv.hue.to_radians().cos(), hsv.hue.to_radians().sin());
+        avg_hx = (avg_hx * i / (i + 1.0)) + (x / (i + 1.0));
+        avg_hy = (avg_hy * i / (i + 1.0)) + (y / (i + 1.0));
         avg_s = (avg_s * i / (i + 1.0)) + (hsv.saturation / (i + 1.0));
+        avg_v = (avg_v * i / (i + 1.0)) + (hsv.value / (i + 1.0));
     }
+
+    let avg_h = (avg_hy / avg_hx).atan().to_degrees();
 
     let light = Hsv {
         hue: avg_h,
         saturation: avg_s,
-        value: 1.0,
+        value: normalize_light_value(avg_v),
     };
     let dark = Hsv {
-        value: 0.7,
+        value: normalize_dark_value(avg_v),
         ..light
     };
 
     (dark, light)
+}
+
+/// Constrains the original value so that it is greater than 0.6 but no greater than 1.
+fn normalize_light_value(value: f32) -> f32 {
+    (value * 0.3) + 0.7
+}
+
+/// Constrains the original value so that it is greater than 0.3 but no greater than 0.6.
+fn normalize_dark_value(value: f32) -> f32 {
+    (value * 0.3) + 0.4
 }
 
 fn get_accent(median_hsv: &Hsv) -> (Hsv, Hsv) {
@@ -192,10 +227,10 @@ fn get_accent(median_hsv: &Hsv) -> (Hsv, Hsv) {
     (dark, light)
 }
 
-fn get_pixels_from_file(file: &Path) -> Result<Vec<Hsv>, ArpeggioError> {
+fn get_pixels_from_file<P: AsRef<Path>>(file: P) -> Result<Vec<Hsv>, ArpeggioError> {
     // open the image
-    println!("opening {}...", file.display());
-    let img = match image::io::Reader::open(&PathBuf::from(file)) {
+    println!("\topening image");
+    let img = match image::io::Reader::open(file) {
         Ok(i) => match i.decode() {
             Ok(j) => j,
             Err(e) => {
@@ -210,9 +245,7 @@ fn get_pixels_from_file(file: &Path) -> Result<Vec<Hsv>, ArpeggioError> {
     };
 
     // collect the pixels, converting each to hsv.
-    // if the image is bigger than 800 pixels by 500, we step over extra pixels so that we only
-    // read a total of 400,000
-    println!("getting pixels for {}...", file.display());
+    println!("\tgetting pixels");
 
     let all_px = img.pixels();
     let img_px_count = {
@@ -220,6 +253,8 @@ fn get_pixels_from_file(file: &Path) -> Result<Vec<Hsv>, ArpeggioError> {
         w * h
     };
 
+    // if the image is bigger than 800 pixels by 500, we step over extra pixels so that we only
+    // read a total of 400,000
     let result = if img_px_count <= 800 * 500 {
         all_px.map(|p| Hsv::from(p.2)).collect()
     } else {
