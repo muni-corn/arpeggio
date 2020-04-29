@@ -52,7 +52,7 @@ impl Palette {
 
         // remove pixels without enough color, pixels too dark, or pixels too bright
         println!("\tfiltering colors");
-        raw_pixels.retain(|c| c.saturation > 0.25 && c.value > 0.1 && c.value < 0.9);
+        raw_pixels.retain(|c| c.saturation > 0.0);
 
 
         let mut px = raw_pixels;
