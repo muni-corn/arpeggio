@@ -3,6 +3,7 @@ use crate::palette::Palette;
 use std::fs;
 use std::path::Path;
 
+// TODO WRITE A FREAKING FUNCTION TO MAKE THIS CLEANER, FOOL
 fn to_esc_sequences(p: &Palette) -> String {
     let mut s = String::new();
 
@@ -16,23 +17,23 @@ fn to_esc_sequences(p: &Palette) -> String {
     ));
     s.push_str(&format!(
         "\u{001b}]4;2;{}\u{001b}\\",
-        p.olive.to_hex_string()
-    ));
-    s.push_str(&format!(
-        "\u{001b}]4;3;{}\u{001b}\\",
         p.green.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;4;{}\u{001b}\\",
-        p.teal.to_hex_string()
+        "\u{001b}]4;3;{}\u{001b}\\",
+        p.olive.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;5;{}\u{001b}\\",
+        "\u{001b}]4;4;{}\u{001b}\\",
         p.navy.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;6;{}\u{001b}\\",
+        "\u{001b}]4;5;{}\u{001b}\\",
         p.purple.to_hex_string()
+    ));
+    s.push_str(&format!(
+        "\u{001b}]4;6;{}\u{001b}\\",
+        p.teal.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;7;{}\u{001b}\\",
@@ -45,23 +46,23 @@ fn to_esc_sequences(p: &Palette) -> String {
     s.push_str(&format!("\u{001b}]4;9;{}\u{001b}\\", p.red.to_hex_string()));
     s.push_str(&format!(
         "\u{001b}]4;10;{}\u{001b}\\",
-        p.yellow.to_hex_string()
-    ));
-    s.push_str(&format!(
-        "\u{001b}]4;11;{}\u{001b}\\",
         p.lime.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;12;{}\u{001b}\\",
-        p.aqua.to_hex_string()
+        "\u{001b}]4;11;{}\u{001b}\\",
+        p.yellow.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;13;{}\u{001b}\\",
+        "\u{001b}]4;12;{}\u{001b}\\",
         p.blue.to_hex_string()
     ));
     s.push_str(&format!(
-        "\u{001b}]4;14;{}\u{001b}\\",
+        "\u{001b}]4;13;{}\u{001b}\\",
         p.magenta.to_hex_string()
+    ));
+    s.push_str(&format!(
+        "\u{001b}]4;14;{}\u{001b}\\",
+        p.aqua.to_hex_string()
     ));
     s.push_str(&format!(
         "\u{001b}]4;15;{}\u{001b}\\",

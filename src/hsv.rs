@@ -14,7 +14,7 @@ pub struct Hsv {
 
 impl Hsv {
     pub fn to_hex_string(&self) -> String {
-        let rgb = self.to_rgb();
+        let rgb = self.to_rgb_floats();
         let r = (rgb.0 * 255.0) as u8;
         let g = (rgb.1 * 255.0) as u8;
         let b = (rgb.2 * 255.0) as u8;
@@ -22,7 +22,7 @@ impl Hsv {
         format!("#{:02x}{:02x}{:02x}", r, g, b)
     }
 
-    pub fn to_rgb(&self) -> (f32, f32, f32) {
+    pub fn to_rgb_floats(&self) -> (f32, f32, f32) {
         let f = |n| {
             let k = (n as f32 + self.hue / 60.0) % 6.0;
             let s = self.saturation;
@@ -36,11 +36,15 @@ impl Hsv {
 
     #[allow(dead_code)]
     pub fn to_rgb_bytes(&self) -> (u8, u8, u8) {
-        let rgb = self.to_rgb();
+        let rgb = self.to_rgb_floats();
 
         let (r, g, b) = (rgb.0 * 255.0, rgb.1 * 255.0, rgb.2 * 255.0);
 
         (r.round() as u8, g.round() as u8, b.round() as u8)
+    }
+
+    pub fn from_rgb_floats(r: f32, g: f32, b: f32) -> Self {
+        Self::from_rgb_bytes((255.0 * r) as u8, (255.0 * g) as u8, (255.0 * b) as u8)
     }
 
     pub fn from_rgb_bytes(r: u8, g: u8, b: u8) -> Self {
@@ -62,7 +66,7 @@ impl Hsv {
         };
 
         let hue = if chroma == 0 {
-            0.01
+            0.0
         } else if max_component == r {
             60.0 * (g - b) as f32 / chroma as f32
         } else if max_component == g {
