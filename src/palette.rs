@@ -173,29 +173,26 @@ fn get_shades(median_hsv: &Hsv) -> (Hsv, Hsv, Hsv, Hsv) {
 /// Returns the average color of the colors in the Vec, returning a dark and light variant (in
 /// that order).
 fn get_average_color(vec: &[Hsv]) -> (Hsv, Hsv) {
-    let mut avg_hx = 0f32;
-    let mut avg_hy = 0f32;
-    let mut avg_s = 0f32;
-    let mut avg_v = 0f32;
+    let mut avg_r = 0f32;
+    let mut avg_g = 0f32;
+    let mut avg_b = 0f32;
 
     for (i, hsv) in vec.iter().enumerate() {
+        let (r, g, b) = hsv.to_rgb_floats();
         let i = i as f32; // re-assign to an f32 version of itself
-        let (x, y) = (hsv.hue.to_radians().cos(), hsv.hue.to_radians().sin());
-        avg_hx = (avg_hx * i / (i + 1.0)) + (x / (i + 1.0));
-        avg_hy = (avg_hy * i / (i + 1.0)) + (y / (i + 1.0));
-        avg_s = (avg_s * i / (i + 1.0)) + (hsv.saturation / (i + 1.0));
-        avg_v = (avg_v * i / (i + 1.0)) + (hsv.value / (i + 1.0));
+        avg_r = (avg_r * i / (i + 1.0)) + (r / (i + 1.0));
+        avg_g = (avg_g * i / (i + 1.0)) + (g / (i + 1.0));
+        avg_b = (avg_b * i / (i + 1.0)) + (b / (i + 1.0));
     }
 
-    let avg_h = (avg_hy / avg_hx).atan().to_degrees();
-
+    let new_hsv = Hsv::from_rgb_floats(avg_r, avg_g, avg_b);
     let light = Hsv {
-        hue: avg_h,
-        saturation: avg_s,
-        value: normalize_light_value(avg_v),
+        hue: new_hsv.hue,
+        saturation: new_hsv.saturation,
+        value: normalize_light_value(new_hsv.value),
     };
     let dark = Hsv {
-        value: normalize_dark_value(avg_v),
+        value: normalize_dark_value(new_hsv.value),
         ..light
     };
 
