@@ -151,14 +151,18 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
         palettes.insert(palette.file_path.clone(), palette.clone());
     }
 
-    if errors.is_empty() {
+    handle_errors(errors, flags);
+}
+
+fn handle_errors(msgs: Vec<String>, flags: &flags::Flags) {
+    if msgs.is_empty() {
         // no errors!
         println!("palettes were made successfully!");
-    } else if errors.len() == flags.image_files.len() {
+    } else if msgs.len() == flags.image_files.len() {
         // all errors
         eprintln!("not a single palette was generated:");
 
-        for e in errors {
+        for e in msgs {
             eprintln!("\t{}", e);
         }
 
@@ -170,7 +174,7 @@ fn make_palettes(flags: &flags::Flags, palettes: &mut config::Palettes) {
         // some errors
         eprintln!("there were some errors during palette creation:");
 
-        for e in errors {
+        for e in msgs {
             eprintln!("\t{}", e);
         }
 
