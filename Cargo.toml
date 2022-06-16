@@ -10,7 +10,7 @@ edition = "2018"
 clap = { version = "3.1", features = [ "derive" ] }
 image = "0.23"
 log = "0.4"          # A lightweight logging facade for Rust
-palette = "0.6"
+palette = { version = "0.6", features = [ "serializing" ] }
 serde = { version = "1.0", features = [ "derive" ] }
 simplelog = "0.12"
 toml = "0.5"
