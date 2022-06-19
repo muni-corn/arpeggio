@@ -3,7 +3,9 @@ use std::{collections::HashMap, io::Write};
 use clap::Parser;
 use image::DynamicImage;
 use log::{debug, info};
-use palette::rgb::Rgb;
+use palette::{
+    FromColor, Lab, Srgb, ColorDifference, white_point::D65,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Hash, PartialEq, Eq, Deserialize, Serialize)]
@@ -34,9 +36,9 @@ enum ColorName {
     DarkPink,
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 struct Palette {
-    colors: HashMap<ColorName, Rgb>,
+    colors: HashMap<ColorName, Lab<D65, f64>>,
 }
 
 impl Default for Palette {
