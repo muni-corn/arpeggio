@@ -169,7 +169,7 @@ fn main() {
 
     // open output file early so we can fail early if we need to
     let mut out_file =
-        std::fs::File::open(&opts.output).expect("couldn't open output file for writing");
+        std::fs::File::create(&opts.output).expect("couldn't create output file for writing");
 
     info!("opening image '{}'", opts.input);
     let img = ImageReader::open(&opts.input).unwrap().decode().unwrap();
