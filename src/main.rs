@@ -6,7 +6,7 @@ use log::{debug, info};
 use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
 use serde::{Deserialize, Serialize};
 
-#[derive(Hash, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Deserialize, Serialize)]
 enum ColorName {
     Black0,
     Black1,
