@@ -227,6 +227,21 @@ fn get_initial_centroids(src_img: DynamicImage) -> Palette {
         })
 }
 
+/// Returns the name of the color that `color` is closest to in the `palette`
+fn get_closest_palette_color_name(palette: &Palette, color: &Lab<D65, f64>) -> Option<ColorName> {
+    palette
+        .colors
+        .iter()
+        .min_by(|(_, lab_1), (_, lab_2)| {
+            lab_1
+                .get_color_difference(color)
+                .partial_cmp(&lab_2.get_color_difference(color))
+                .unwrap_or(std::cmp::Ordering::Equal)
+        })
+        .map(|(color_name, _)| color_name)
+        .cloned()
+}
+
 fn make_palette(src_img: DynamicImage) -> Palette {
     todo!()
 }
