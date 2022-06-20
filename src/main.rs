@@ -152,7 +152,6 @@ impl Default for Palette {
 #[derive(Parser)]
 struct ArpeggioOpts {
     /// The path to the reference image
-    #[clap(short, long)]
     input: String,
 
     /// The path to save palette output to
