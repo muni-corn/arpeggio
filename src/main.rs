@@ -70,6 +70,24 @@ struct Palette {
     colors: HashMap<ColorName, Lab<D65, f64>>,
 }
 
+impl Palette {
+    fn as_strings(&self) -> HashMap<&str, String> {
+        self.colors
+            .iter()
+            .map(|(k, v)| {
+                let rgb = Srgb::from_color(*v);
+                let red_byte = (rgb.red * 255.0) as u8;
+                let green_byte = (rgb.green * 255.0) as u8;
+                let blue_byte = (rgb.blue * 255.0) as u8;
+                (
+                    k.as_str(),
+                    format!("#{red_byte:02x}{green_byte:02x}{blue_byte:02x}"),
+                )
+            })
+            .collect()
+    }
+}
+
 impl Default for Palette {
     fn default() -> Self {
         let colors = {
