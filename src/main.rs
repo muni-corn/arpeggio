@@ -34,6 +34,37 @@ enum ColorName {
     DarkPink,
 }
 
+impl ColorName {
+    fn as_str(&self) -> &'static str {
+        match self {
+            ColorName::Black0 => "Black0",
+            ColorName::Black1 => "Black1",
+            ColorName::Black2 => "Black2",
+            ColorName::Black3 => "Black3",
+            ColorName::White0 => "White0",
+            ColorName::White1 => "White1",
+            ColorName::White2 => "White2",
+            ColorName::White3 => "White3",
+            ColorName::Red => "Red",
+            ColorName::Orange => "Orange",
+            ColorName::Yellow => "Yellow",
+            ColorName::Green => "Green",
+            ColorName::Cyan => "Cyan",
+            ColorName::Blue => "Blue",
+            ColorName::Purple => "Purple",
+            ColorName::Pink => "Pink",
+            ColorName::DarkRed => "DarkRed",
+            ColorName::DarkOrange => "DarkOrange",
+            ColorName::DarkYellow => "DarkYellow",
+            ColorName::DarkGreen => "DarkGreen",
+            ColorName::DarkCyan => "DarkCyan",
+            ColorName::DarkBlue => "DarkBlue",
+            ColorName::DarkPurple => "DarkPurple",
+            ColorName::DarkPink => "DarkPink",
+        }
+    }
+}
+
 #[derive(Clone, Deserialize, Serialize)]
 struct Palette {
     colors: HashMap<ColorName, Lab<D65, f64>>,
