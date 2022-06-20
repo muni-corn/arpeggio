@@ -182,6 +182,51 @@ fn main() {
     write!(out_file, "{toml_str}").expect("couldn't write output to file");
 }
 
+/// Returns a `Palette` with colors from the image that most closely match the colors of the
+/// default `Palette`.
+fn get_initial_centroids(src_img: DynamicImage) -> Palette {
+    let original_palette = Palette::default();
+
+    src_img
+        .pixels()
+        // convert each image pixel into a Lab color (from the palette lib)
+        .map(|(x, y, val)| {
+            info!("mapping px {x}, {y}");
+
+            let rgb = val.to_rgb();
+            let rgb_slice = rgb.channels();
+            let palette_srgb = Srgb::from_components((
+                rgb_slice[0] as f64 / u8::MAX as f64,
+                rgb_slice[1] as f64 / u8::MAX as f64,
+                rgb_slice[2] as f64 / u8::MAX as f64,
+            ));
+            Lab::from_color(palette_srgb)
+        })
+        // iterate over each pixel to create a new palette that most closely matches the original
+        // (default) palette using only colors from the image
+        .fold(original_palette.clone(), |mut acc, img_pixel| {
+            // for each color in the current palette...
+            acc.colors.iter_mut().for_each(|(color_name, acc_color)| {
+                if let Some(original_palette_color) = original_palette.colors.get(color_name) {
+                    // get the source image pixel's color distance to the original palette
+                    let img_pixel_diff = img_pixel.get_color_difference(original_palette_color);
+
+                    // and the palette-so-far's color distance to the original palette
+                    let acc_color_diff = acc_color.get_color_difference(original_palette_color);
+
+                    // if the image pixel is closer to the original palette than the current
+                    // centroid (acc) color...
+                    if img_pixel_diff.abs() < acc_color_diff.abs() {
+                        // ...update the centroid
+                        *acc_color = img_pixel;
+                    }
+                }
+            });
+
+            acc
+        })
+}
+
 fn make_palette(src_img: DynamicImage) -> Palette {
     todo!()
 }
