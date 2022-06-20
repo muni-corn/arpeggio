@@ -1,11 +1,9 @@
 use std::{collections::HashMap, io::Write};
 
 use clap::Parser;
-use image::DynamicImage;
+use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info};
-use palette::{
-    FromColor, Lab, Srgb, ColorDifference, white_point::D65,
-};
+use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
 use serde::{Deserialize, Serialize};
 
 #[derive(Hash, PartialEq, Eq, Deserialize, Serialize)]
