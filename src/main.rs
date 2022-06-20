@@ -206,7 +206,8 @@ fn main() {
     let palette = make_palette(img, Palette::default());
 
     info!("writing palette to '{}'", opts.output);
-    let toml_str = toml::to_string_pretty(&palette).expect("couldn't format palette as toml");
+    let toml_str =
+        toml::to_string_pretty(&palette.as_strings()).expect("couldn't format palette as toml");
     write!(out_file, "{toml_str}").expect("couldn't write output to file");
 }
 
