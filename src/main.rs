@@ -4,9 +4,9 @@ use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info};
 use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
-#[derive(Copy, Clone, Hash, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize)]
 enum ColorName {
     Black0,
     Black1,
@@ -65,7 +65,7 @@ impl ColorName {
     }
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Serialize)]
 struct Palette {
     colors: HashMap<ColorName, Lab<D65, f64>>,
 }
