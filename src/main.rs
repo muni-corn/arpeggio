@@ -93,6 +93,42 @@ impl ColorName {
             ColorName::DarkPink => "DarkPink",
         }
     }
+
+    fn as_default_lab(&self) -> Lab<D65, f64> {
+        let rgb = match self {
+            // shades
+            ColorName::Black0 => Srgb::new(0.0, 0.0, 0.0),
+            ColorName::Black1 => Srgb::new(1.0 / 7.0, 1.0 / 7.0, 1.0 / 7.0),
+            ColorName::Black2 => Srgb::new(2.0 / 7.0, 2.0 / 7.0, 2.0 / 7.0),
+            ColorName::Black3 => Srgb::new(3.0 / 7.0, 3.0 / 7.0, 3.0 / 7.0),
+            ColorName::White0 => Srgb::new(4.0 / 7.0, 4.0 / 7.0, 4.0 / 7.0),
+            ColorName::White1 => Srgb::new(5.0 / 7.0, 5.0 / 7.0, 5.0 / 7.0),
+            ColorName::White2 => Srgb::new(6.0 / 7.0, 6.0 / 7.0, 6.0 / 7.0),
+            ColorName::White3 => Srgb::new(1.0, 1.0, 1.0),
+
+            // normal colors
+            ColorName::Red => Srgb::new(1.0, 0.0, 0.0),
+            ColorName::Orange => Srgb::new(1.0, 1.0 / 2.0, 0.0),
+            ColorName::Yellow => Srgb::new(1.0, 1.0, 0.0),
+            ColorName::Green => Srgb::new(0.0, 1.0, 0.0),
+            ColorName::Cyan => Srgb::new(0.0, 1.0, 1.0),
+            ColorName::Blue => Srgb::new(0.0, 0.0, 1.0),
+            ColorName::Purple => Srgb::new(0.5, 0.0, 1.0),
+            ColorName::Pink => Srgb::new(1.0, 0.0, 1.0),
+
+            // dark colors
+            ColorName::DarkRed => Srgb::new(0.5, 0.0, 0.0),
+            ColorName::DarkOrange => Srgb::new(0.5, 0.25, 0.0),
+            ColorName::DarkYellow => Srgb::new(0.5, 0.5, 0.0),
+            ColorName::DarkGreen => Srgb::new(0.0, 0.5, 0.0),
+            ColorName::DarkCyan => Srgb::new(0.0, 0.5, 0.5),
+            ColorName::DarkBlue => Srgb::new(0.0, 0.0, 0.5),
+            ColorName::DarkPurple => Srgb::new(0.25, 0.0, 0.5),
+            ColorName::DarkPink => Srgb::new(0.5, 0.0, 0.5),
+        };
+
+        Lab::from_color(rgb)
+    }
 }
 
 #[derive(Clone, Serialize)]
