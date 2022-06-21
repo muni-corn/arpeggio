@@ -2,7 +2,7 @@ use std::{collections::HashMap, io::Write};
 
 use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
-use log::{debug, info, trace};
+use log::{debug, info, trace, warn};
 use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
 use rayon::prelude::*;
 use serde::Serialize;
@@ -164,6 +164,31 @@ impl Palette {
         Self { colors }
     }
 
+    /// Checks each available `ColorName`. If one is missing from this `Palette`'s `colors`, gets
+    /// an existing color that is closest to the default (missing) color and copy it over.
+    fn copy_missing_colors(&mut self) {
+        ColorName::all().iter().for_each(|color_name| {
+            if !self.colors.contains_key(color_name) {
+                let new = if let Some((closest_color_name, closest_color)) =
+                    get_closest_palette_color(self, &color_name.as_default_lab())
+                {
+                    warn!(
+                        "copying {} to {}",
+                        closest_color_name.as_str(),
+                        color_name.as_str()
+                    );
+                    closest_color
+                } else {
+                    // if for some reason there just isn't a closest color, we'll default to the
+                    // default color
+
+                    color_name.as_default_lab()
+                };
+                self.colors.insert(*color_name, new);
+            }
+        })
+    }
+
     fn as_strings(&self) -> HashMap<&str, String> {
         self.colors
             .iter()
@@ -268,7 +293,8 @@ fn main() {
     let img = ImageReader::open(&opts.input).unwrap().decode().unwrap();
 
     info!("generating palette");
-    let palette = make_palette(img, Palette::default());
+    let mut palette = make_palette(img, Palette::default());
+    palette.copy_missing_colors();
 
     info!("writing palette to '{}'", opts.output);
     let toml_str =
