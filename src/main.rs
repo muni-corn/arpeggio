@@ -36,6 +36,35 @@ enum ColorName {
 }
 
 impl ColorName {
+    fn all() -> Vec<Self> {
+        vec![
+            Self::Black0,
+            Self::Black1,
+            Self::Black2,
+            Self::Black3,
+            Self::White0,
+            Self::White1,
+            Self::White2,
+            Self::White3,
+            Self::Red,
+            Self::Orange,
+            Self::Yellow,
+            Self::Green,
+            Self::Cyan,
+            Self::Blue,
+            Self::Purple,
+            Self::Pink,
+            Self::DarkRed,
+            Self::DarkOrange,
+            Self::DarkYellow,
+            Self::DarkGreen,
+            Self::DarkCyan,
+            Self::DarkBlue,
+            Self::DarkPurple,
+            Self::DarkPink,
+        ]
+    }
+
     fn as_str(&self) -> &'static str {
         match self {
             ColorName::Black0 => "Black0",
