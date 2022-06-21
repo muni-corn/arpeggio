@@ -203,7 +203,7 @@ fn main() {
     let img = ImageReader::open(&opts.input).unwrap().decode().unwrap();
 
     info!("generating palette");
-    let palette = make_palette(img);
+    let palette = make_palette(img, Palette::default());
 
     info!("writing palette to '{}'", opts.output);
     let toml_str = toml::to_string_pretty(&palette).expect("couldn't format palette as toml");
@@ -270,6 +270,63 @@ fn get_closest_palette_color_name(palette: &Palette, color: &Lab<D65, f64>) -> O
         .cloned()
 }
 
-fn make_palette(src_img: DynamicImage) -> Palette {
-    todo!()
+type Bucket = Vec<Lab<D65, f64>>;
+type Buckets = HashMap<ColorName, Bucket>;
+
+/// Returns a palette made from the colors of the source image according to the centroids provided.
+fn make_palette(src_img: DynamicImage, centroids: Palette) -> Palette {
+    let buckets = src_img
+        // get the pixels
+        .pixels()
+        // iterate in parallel
+        .par_bridge()
+        // map each image pixel into a `palette::Lab`
+        .map(|(x, y, val)| {
+            trace!("mapping px {x}, {y}");
+
+            // convert the image rgb to the palette lib `Lab`
+            let rgb = val.to_rgb();
+            let rgb_slice = rgb.channels();
+            let palette_srgb = Srgb::from_components((
+                rgb_slice[0] as f64 / u8::MAX as f64,
+                rgb_slice[1] as f64 / u8::MAX as f64,
+                rgb_slice[2] as f64 / u8::MAX as f64,
+            ));
+            Lab::from_color(palette_srgb)
+        })
+        // fold into sets of buckets
+        //
+        // parallel `fold` is weird because it isn't guaranteed to yield exactly one result, so we
+        // have to use `reduce` below to combine the series of `Buckets` into one `Buckets`
+        .fold(Buckets::new, |mut buckets, img_lab| {
+            // if we can get the name of the color this image pixel is closest to...
+            if let Some(closest_color_name) = get_closest_palette_color_name(&centroids, &img_lab) {
+                // ...update the bucket or insert a new one
+                buckets
+                    .entry(closest_color_name)
+                    .or_insert_with(Vec::new)
+                    .push(img_lab);
+            }
+            // we won't do anything if for some reason we can't get the closest color name
+
+            // return the HashMap for the next iteration of `fold`
+            buckets
+        })
+        // reduce the series of `Buckets` into one `Buckets` object
+        .reduce(Buckets::new, |a, b| {
+            a.into_iter().chain(b.into_iter()).fold(
+                Buckets::new(),
+                |mut acc, (color_name, mut bucket)| {
+                    // if the color name entry already exists in `acc`, append this bucket.
+                    // otherwise, initialize it with this bucket
+                    acc.entry(color_name)
+                        .or_insert_with(Bucket::new)
+                        .append(&mut bucket);
+
+                    acc
+                },
+            )
+        });
+
+    Palette::from_buckets(buckets)
 }
