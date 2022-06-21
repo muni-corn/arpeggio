@@ -299,7 +299,7 @@ fn get_initial_centroids(src_img: DynamicImage) -> Palette {
 }
 
 /// Returns the name of the color that `color` is closest to in the `palette`
-fn get_closest_palette_color_name(palette: &Palette, color: &Lab<D65, f64>) -> Option<ColorName> {
+fn get_closest_palette_color(palette: &Palette, color: &Lab<D65, f64>) -> Option<(ColorName, Lab<D65, f64>)> {
     palette
         .colors
         .iter()
@@ -309,8 +309,7 @@ fn get_closest_palette_color_name(palette: &Palette, color: &Lab<D65, f64>) -> O
                 .partial_cmp(&lab_2.get_color_difference(color))
                 .unwrap_or(std::cmp::Ordering::Equal)
         })
-        .map(|(color_name, _)| color_name)
-        .cloned()
+        .map(|(color_name, color)| (*color_name, *color))
 }
 
 type Bucket = Vec<Lab<D65, f64>>;
@@ -343,7 +342,7 @@ fn make_palette(src_img: DynamicImage, centroids: Palette) -> Palette {
         // have to use `reduce` below to combine the series of `Buckets` into one `Buckets`
         .fold(Buckets::new, |mut buckets, img_lab| {
             // if we can get the name of the color this image pixel is closest to...
-            if let Some(closest_color_name) = get_closest_palette_color_name(&centroids, &img_lab) {
+            if let Some((closest_color_name, _)) = get_closest_palette_color(&centroids, &img_lab) {
                 // ...update the bucket or insert a new one
                 buckets
                     .entry(closest_color_name)
