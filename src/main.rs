@@ -72,6 +72,33 @@ struct Palette {
 }
 
 impl Palette {
+    fn from_buckets(buckets: Buckets) -> Self {
+        let colors = buckets
+            .into_iter()
+            .map(|(color_name, bucket)| {
+                // compute average color by first adding up all components...
+                let sums = bucket.iter().fold((0.0, 0.0, 0.0), |mut acc, color| {
+                    acc.0 += color.l;
+                    acc.1 += color.a;
+                    acc.2 += color.b;
+                    acc
+                });
+
+                // ...and then dividing by the amount of colors
+                let (l, a, b) = (
+                    sums.0 / bucket.len() as f64,
+                    sums.1 / bucket.len() as f64,
+                    sums.2 / bucket.len() as f64,
+                );
+
+                // now return the new averaged Lab color
+                (color_name, Lab::<D65, f64>::from_components((l, a, b)))
+            })
+            .collect();
+
+        Self { colors }
+    }
+
     fn as_strings(&self) -> HashMap<&str, String> {
         self.colors
             .iter()
