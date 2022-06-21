@@ -2,7 +2,7 @@ use std::{collections::HashMap, io::Write};
 
 use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
-use log::{debug, info};
+use log::{debug, info, trace};
 use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
 use rayon::prelude::*;
 use serde::Serialize;
