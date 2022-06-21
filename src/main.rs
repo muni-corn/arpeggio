@@ -4,6 +4,7 @@ use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info};
 use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
+use rayon::prelude::*;
 use serde::Serialize;
 
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize)]
