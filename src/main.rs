@@ -77,6 +77,37 @@ impl ColorName {
         ]
     }
 
+    fn color_type(&self) -> ColorType {
+        match self {
+            Self::Black0
+            | Self::Black1
+            | Self::Black2
+            | Self::Black3
+            | Self::White0
+            | Self::White1
+            | Self::White2
+            | Self::White3 => ColorType::Shade,
+
+            Self::Red
+            | Self::Orange
+            | Self::Yellow
+            | Self::Green
+            | Self::Cyan
+            | Self::Blue
+            | Self::Purple
+            | Self::Pink => ColorType::BrightColor,
+
+            Self::DarkRed
+            | Self::DarkOrange
+            | Self::DarkYellow
+            | Self::DarkGreen
+            | Self::DarkCyan
+            | Self::DarkBlue
+            | Self::DarkPurple
+            | Self::DarkPink => ColorType::DarkColor,
+        }
+    }
+
     fn as_str(&self) -> &'static str {
         match self {
             ColorName::Black0 => "black_0",
