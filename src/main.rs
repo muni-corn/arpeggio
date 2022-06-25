@@ -212,9 +212,11 @@ impl Palette {
     fn copy_missing_colors(&mut self) {
         ColorName::all().iter().for_each(|color_name| {
             if !self.colors.contains_key(color_name) {
-                let new = if let Some((closest_color_name, closest_color)) =
-                    self.get_closest_palette_color(&color_name.as_default_lab())
-                {
+                let new = if let Some((closest_color_name, closest_color)) = self
+                    .get_closest_palette_color_with_type(
+                        color_name.color_type(),
+                        &color_name.as_default_lab(),
+                    ) {
                     warn!(
                         "copying {} to {}",
                         closest_color_name.as_str(),
