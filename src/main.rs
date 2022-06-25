@@ -212,12 +212,7 @@ impl Palette {
     ) -> Option<(ColorName, Lab<D65, f64>)> {
         self.colors
             .iter()
-            .min_by(|(_, lab_1), (_, lab_2)| {
-                lab_1
-                    .get_color_difference(color)
-                    .partial_cmp(&lab_2.get_color_difference(color))
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            })
+            .min_by(|(_, lab_1), (_, lab_2)| compare_distances_to_color(color, lab_1, lab_2))
             .map(|(color_name, color)| (*color_name, *color))
     }
 }
@@ -373,4 +368,15 @@ fn make_palette(src_img: DynamicImage, centroids: Palette) -> Palette {
         });
 
     Palette::from_buckets(buckets)
+}
+
+fn compare_distances_to_color(
+    target: &Lab<D65, f64>,
+    lab_1: &Lab<D65, f64>,
+    lab_2: &Lab<D65, f64>,
+) -> std::cmp::Ordering {
+    lab_1
+        .get_color_difference(target)
+        .partial_cmp(&lab_2.get_color_difference(target))
+        .unwrap_or(std::cmp::Ordering::Equal)
 }
