@@ -7,6 +7,18 @@ use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
 use rayon::prelude::*;
 use serde::Serialize;
 
+#[derive(Eq, PartialEq)]
+enum ColorType {
+    /// A black, gray, or white color.
+    Shade,
+
+    /// A bright color with saturation.
+    BrightColor,
+
+    /// A dark color with saturation.
+    DarkColor,
+}
+
 #[derive(Copy, Clone, Hash, PartialEq, Eq, Serialize)]
 enum ColorName {
     Black0,
