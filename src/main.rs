@@ -258,6 +258,20 @@ impl Palette {
             .min_by(|(_, lab_1), (_, lab_2)| compare_distances_to_color(color, lab_1, lab_2))
             .map(|(color_name, color)| (*color_name, *color))
     }
+
+    /// Returns the name of the color that `color` is closest to in the palette, except the set of
+    /// possible colors is restricted to those colors that match the `color_type`.
+    fn get_closest_palette_color_with_type(
+        &self,
+        color_type: ColorType,
+        color: &Lab<D65, f64>,
+    ) -> Option<(ColorName, Lab<D65, f64>)> {
+        self.colors
+            .iter()
+            .filter(|(color_name, _)| color_name.color_type() == color_type)
+            .min_by(|(_, lab_1), (_, lab_2)| compare_distances_to_color(color, lab_1, lab_2))
+            .map(|(color_name, color)| (*color_name, *color))
+    }
 }
 
 impl Default for Palette {
