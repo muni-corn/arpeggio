@@ -154,43 +154,43 @@ impl ColorName {
     }
 
     fn as_default_lab(&self) -> Lab<D65, f64> {
-        let l = |n| Oklch::<f64>::max_l() * n as f64 / 8.0;
-        let h = |stop| stop as f64 * 45.0; // assuming 8 different stops
-
+        let shade_l = |n| Oklch::<f64>::max_l() * n as f64 / 8.0;
         let bright_l = Oklch::<f64>::max_l() * 0.9;
         let dark_l = Oklch::<f64>::max_l() * 0.7;
-        let chroma = Oklch::<f64>::max_chroma() * 0.8;
+
+        let c = Oklch::<f64>::max_chroma();
+        let h = self.default_hue().unwrap_or(0.0);
 
         let rgb = match self {
             // shades
-            ColorName::Black0 => Oklch::new(l(1), 0.0, 0.0),
-            ColorName::Black1 => Oklch::new(l(2), 0.0, 0.0),
-            ColorName::Black2 => Oklch::new(l(3), 0.0, 0.0),
-            ColorName::Black3 => Oklch::new(l(4), 0.0, 0.0),
-            ColorName::White0 => Oklch::new(l(5), 0.0, 0.0),
-            ColorName::White1 => Oklch::new(l(6), 0.0, 0.0),
-            ColorName::White2 => Oklch::new(l(7), 0.0, 0.0),
-            ColorName::White3 => Oklch::new(l(8), 0.0, 0.0),
+            ColorName::Black0 => Oklch::new(shade_l(1), 0.0, 0.0),
+            ColorName::Black1 => Oklch::new(shade_l(2), 0.0, 0.0),
+            ColorName::Black2 => Oklch::new(shade_l(3), 0.0, 0.0),
+            ColorName::Black3 => Oklch::new(shade_l(4), 0.0, 0.0),
+            ColorName::White0 => Oklch::new(shade_l(5), 0.0, 0.0),
+            ColorName::White1 => Oklch::new(shade_l(6), 0.0, 0.0),
+            ColorName::White2 => Oklch::new(shade_l(7), 0.0, 0.0),
+            ColorName::White3 => Oklch::new(shade_l(8), 0.0, 0.0),
 
             // normal colors
-            ColorName::Red => Oklch::new(bright_l, chroma, h(0)),
-            ColorName::Orange => Oklch::new(bright_l, chroma, h(1)),
-            ColorName::Yellow => Oklch::new(bright_l, chroma, h(2)),
-            ColorName::Green => Oklch::new(bright_l, chroma, h(3)),
-            ColorName::Cyan => Oklch::new(bright_l, chroma, h(4)),
-            ColorName::Blue => Oklch::new(bright_l, chroma, h(5)),
-            ColorName::Purple => Oklch::new(bright_l, chroma, h(6)),
-            ColorName::Pink => Oklch::new(bright_l, chroma, h(7)),
+            ColorName::Red => Oklch::new(bright_l, c, h),
+            ColorName::Orange => Oklch::new(bright_l, c, h),
+            ColorName::Yellow => Oklch::new(bright_l, c, h),
+            ColorName::Green => Oklch::new(bright_l, c, h),
+            ColorName::Cyan => Oklch::new(bright_l, c, h),
+            ColorName::Blue => Oklch::new(bright_l, c, h),
+            ColorName::Purple => Oklch::new(bright_l, c, h),
+            ColorName::Pink => Oklch::new(bright_l, c, h),
 
             // dark colors
-            ColorName::DarkRed => Oklch::new(dark_l, chroma, h(0)),
-            ColorName::DarkOrange => Oklch::new(dark_l, chroma, h(1)),
-            ColorName::DarkYellow => Oklch::new(dark_l, chroma, h(2)),
-            ColorName::DarkGreen => Oklch::new(dark_l, chroma, h(3)),
-            ColorName::DarkCyan => Oklch::new(dark_l, chroma, h(4)),
-            ColorName::DarkBlue => Oklch::new(dark_l, chroma, h(5)),
-            ColorName::DarkPurple => Oklch::new(dark_l, chroma, h(6)),
-            ColorName::DarkPink => Oklch::new(dark_l, chroma, h(7)),
+            ColorName::DarkRed => Oklch::new(dark_l, c, h),
+            ColorName::DarkOrange => Oklch::new(dark_l, c, h),
+            ColorName::DarkYellow => Oklch::new(dark_l, c, h),
+            ColorName::DarkGreen => Oklch::new(dark_l, c, h),
+            ColorName::DarkCyan => Oklch::new(dark_l, c, h),
+            ColorName::DarkBlue => Oklch::new(dark_l, c, h),
+            ColorName::DarkPurple => Oklch::new(dark_l, c, h),
+            ColorName::DarkPink => Oklch::new(dark_l, c, h),
         };
 
         Lab::from_color(rgb)
