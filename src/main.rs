@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::Write};
 use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info, trace, warn};
-use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb, Oklch};
+use palette::{white_point::D65, ColorDifference, FromColor, Lab, Oklch, Srgb};
 use rayon::prelude::*;
 use serde::Serialize;
 
@@ -126,30 +126,30 @@ impl ColorName {
 
     fn as_str(&self) -> &'static str {
         match self {
-            ColorName::Black0 => "black_0",
-            ColorName::Black1 => "black_1",
-            ColorName::Black2 => "black_2",
-            ColorName::Black3 => "black_3",
-            ColorName::White0 => "white_0",
-            ColorName::White1 => "white_1",
-            ColorName::White2 => "white_2",
-            ColorName::White3 => "white_3",
-            ColorName::Red => "red",
-            ColorName::Orange => "orange",
-            ColorName::Yellow => "yellow",
-            ColorName::Green => "green",
-            ColorName::Cyan => "cyan",
-            ColorName::Blue => "blue",
-            ColorName::Purple => "purple",
-            ColorName::Pink => "pink",
-            ColorName::DarkRed => "dark_red",
-            ColorName::DarkOrange => "dark_orange",
-            ColorName::DarkYellow => "dark_yellow",
-            ColorName::DarkGreen => "dark_green",
-            ColorName::DarkCyan => "dark_cyan",
-            ColorName::DarkBlue => "dark_blue",
-            ColorName::DarkPurple => "dark_purple",
-            ColorName::DarkPink => "dark_pink",
+            Self::Black0 => "black_0",
+            Self::Black1 => "black_1",
+            Self::Black2 => "black_2",
+            Self::Black3 => "black_3",
+            Self::White0 => "white_0",
+            Self::White1 => "white_1",
+            Self::White2 => "white_2",
+            Self::White3 => "white_3",
+            Self::Red => "red",
+            Self::Orange => "orange",
+            Self::Yellow => "yellow",
+            Self::Green => "green",
+            Self::Cyan => "cyan",
+            Self::Blue => "blue",
+            Self::Purple => "purple",
+            Self::Pink => "pink",
+            Self::DarkRed => "dark_red",
+            Self::DarkOrange => "dark_orange",
+            Self::DarkYellow => "dark_yellow",
+            Self::DarkGreen => "dark_green",
+            Self::DarkCyan => "dark_cyan",
+            Self::DarkBlue => "dark_blue",
+            Self::DarkPurple => "dark_purple",
+            Self::DarkPink => "dark_pink",
         }
     }
 
