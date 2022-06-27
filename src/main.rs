@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::Write};
 use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info, trace, warn};
-use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb};
+use palette::{white_point::D65, ColorDifference, FromColor, Lab, Srgb, Oklch};
 use rayon::prelude::*;
 use serde::Serialize;
 
@@ -138,36 +138,43 @@ impl ColorName {
     }
 
     fn as_default_lab(&self) -> Lab<D65, f64> {
+        let l = |n| Oklch::<f64>::max_l() * n as f64 / 8.0;
+        let h = |stop| stop as f64 * 45.0; // assuming 8 different stops
+
+        let bright_l = Oklch::<f64>::max_l() * 0.9;
+        let dark_l = Oklch::<f64>::max_l() * 0.7;
+        let chroma = Oklch::<f64>::max_chroma() * 0.8;
+
         let rgb = match self {
             // shades
-            ColorName::Black0 => Srgb::new(0.0, 0.0, 0.0),
-            ColorName::Black1 => Srgb::new(1.0 / 7.0, 1.0 / 7.0, 1.0 / 7.0),
-            ColorName::Black2 => Srgb::new(2.0 / 7.0, 2.0 / 7.0, 2.0 / 7.0),
-            ColorName::Black3 => Srgb::new(3.0 / 7.0, 3.0 / 7.0, 3.0 / 7.0),
-            ColorName::White0 => Srgb::new(4.0 / 7.0, 4.0 / 7.0, 4.0 / 7.0),
-            ColorName::White1 => Srgb::new(5.0 / 7.0, 5.0 / 7.0, 5.0 / 7.0),
-            ColorName::White2 => Srgb::new(6.0 / 7.0, 6.0 / 7.0, 6.0 / 7.0),
-            ColorName::White3 => Srgb::new(1.0, 1.0, 1.0),
+            ColorName::Black0 => Oklch::new(l(1), 0.0, 0.0),
+            ColorName::Black1 => Oklch::new(l(2), 0.0, 0.0),
+            ColorName::Black2 => Oklch::new(l(3), 0.0, 0.0),
+            ColorName::Black3 => Oklch::new(l(4), 0.0, 0.0),
+            ColorName::White0 => Oklch::new(l(5), 0.0, 0.0),
+            ColorName::White1 => Oklch::new(l(6), 0.0, 0.0),
+            ColorName::White2 => Oklch::new(l(7), 0.0, 0.0),
+            ColorName::White3 => Oklch::new(l(8), 0.0, 0.0),
 
             // normal colors
-            ColorName::Red => Srgb::new(1.0, 0.0, 0.0),
-            ColorName::Orange => Srgb::new(1.0, 1.0 / 2.0, 0.0),
-            ColorName::Yellow => Srgb::new(1.0, 1.0, 0.0),
-            ColorName::Green => Srgb::new(0.0, 1.0, 0.0),
-            ColorName::Cyan => Srgb::new(0.0, 1.0, 1.0),
-            ColorName::Blue => Srgb::new(0.0, 0.0, 1.0),
-            ColorName::Purple => Srgb::new(0.5, 0.0, 1.0),
-            ColorName::Pink => Srgb::new(1.0, 0.0, 1.0),
+            ColorName::Red => Oklch::new(bright_l, chroma, h(0)),
+            ColorName::Orange => Oklch::new(bright_l, chroma, h(1)),
+            ColorName::Yellow => Oklch::new(bright_l, chroma, h(2)),
+            ColorName::Green => Oklch::new(bright_l, chroma, h(3)),
+            ColorName::Cyan => Oklch::new(bright_l, chroma, h(4)),
+            ColorName::Blue => Oklch::new(bright_l, chroma, h(5)),
+            ColorName::Purple => Oklch::new(bright_l, chroma, h(6)),
+            ColorName::Pink => Oklch::new(bright_l, chroma, h(7)),
 
             // dark colors
-            ColorName::DarkRed => Srgb::new(0.5, 0.0, 0.0),
-            ColorName::DarkOrange => Srgb::new(0.5, 0.25, 0.0),
-            ColorName::DarkYellow => Srgb::new(0.5, 0.5, 0.0),
-            ColorName::DarkGreen => Srgb::new(0.0, 0.5, 0.0),
-            ColorName::DarkCyan => Srgb::new(0.0, 0.5, 0.5),
-            ColorName::DarkBlue => Srgb::new(0.0, 0.0, 0.5),
-            ColorName::DarkPurple => Srgb::new(0.25, 0.0, 0.5),
-            ColorName::DarkPink => Srgb::new(0.5, 0.0, 0.5),
+            ColorName::DarkRed => Oklch::new(dark_l, chroma, h(0)),
+            ColorName::DarkOrange => Oklch::new(dark_l, chroma, h(1)),
+            ColorName::DarkYellow => Oklch::new(dark_l, chroma, h(2)),
+            ColorName::DarkGreen => Oklch::new(dark_l, chroma, h(3)),
+            ColorName::DarkCyan => Oklch::new(dark_l, chroma, h(4)),
+            ColorName::DarkBlue => Oklch::new(dark_l, chroma, h(5)),
+            ColorName::DarkPurple => Oklch::new(dark_l, chroma, h(6)),
+            ColorName::DarkPink => Oklch::new(dark_l, chroma, h(7)),
         };
 
         Lab::from_color(rgb)
