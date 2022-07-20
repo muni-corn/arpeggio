@@ -312,7 +312,7 @@ impl Default for Palette {
 #[derive(Parser)]
 struct ArpeggioOpts {
     /// The path to the reference image
-    input: String,
+    inputs: Vec<String>,
 
     /// The path to save palette output to
     #[clap(short, long, default_value = "arpeggio_palette.toml")]
@@ -331,11 +331,15 @@ fn main() {
     let mut out_file =
         std::fs::File::create(&opts.output).expect("couldn't create output file for writing");
 
-    info!("opening image '{}'", opts.input);
-    let img = ImageReader::open(&opts.input).unwrap().decode().unwrap();
+    info!("opening images '{:?}'", &opts.inputs);
+    let imgs: Vec<DynamicImage> = opts
+        .inputs
+        .iter()
+        .map(|path| ImageReader::open(&path).unwrap().decode().unwrap())
+        .collect();
 
     info!("generating palette");
-    let mut palette = make_palette(img, Palette::default());
+    let mut palette = make_palette(&imgs, Palette::default());
     palette.copy_missing_colors();
 
     info!("writing palette to '{}'", opts.output);
@@ -393,25 +397,30 @@ type Bucket = Vec<Lab<D65, f64>>;
 type Buckets = HashMap<ColorName, Bucket>;
 
 /// Returns a palette made from the colors of the source image according to the centroids provided.
-fn make_palette(src_img: DynamicImage, centroids: Palette) -> Palette {
-    let buckets = src_img
-        // get the pixels
-        .pixels()
-        // iterate in parallel
-        .par_bridge()
-        // map each image pixel into a `palette::Lab`
-        .map(|(x, y, val)| {
-            trace!("mapping px {x}, {y}");
+fn make_palette(src_imgs: &[DynamicImage], centroids: Palette) -> Palette {
+    let buckets = src_imgs
+        .par_iter()
+        // get pixels from all images and convert them all to `palette::Lab`
+        .flat_map(|src_img| {
+            // get the pixels
+            src_img
+                .pixels()
+                // iterate in parallel
+                .par_bridge()
+                // map each image pixel into a `palette::Lab`
+                .map(|(x, y, val)| {
+                    trace!("mapping px {x}, {y}");
 
-            // convert the image rgb to the palette lib `Lab`
-            let rgb = val.to_rgb();
-            let rgb_slice = rgb.channels();
-            let palette_srgb = Srgb::from_components((
-                rgb_slice[0] as f64 / u8::MAX as f64,
-                rgb_slice[1] as f64 / u8::MAX as f64,
-                rgb_slice[2] as f64 / u8::MAX as f64,
-            ));
-            Lab::from_color(palette_srgb)
+                    // convert the image rgb to the palette lib `Lab`
+                    let rgb = val.to_rgb();
+                    let rgb_slice = rgb.channels();
+                    let palette_srgb = palette::Srgb::from_components((
+                        rgb_slice[0] as f64 / u8::MAX as f64,
+                        rgb_slice[1] as f64 / u8::MAX as f64,
+                        rgb_slice[2] as f64 / u8::MAX as f64,
+                    ));
+                    Lab::from_color(palette_srgb)
+                })
         })
         // fold into sets of buckets
         //
