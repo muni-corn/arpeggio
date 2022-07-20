@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::Write};
 use clap::Parser;
 use image::{DynamicImage, GenericImageView, Pixel as ImagePixel};
 use log::{debug, info, trace, warn};
-use palette::{white_point::D65, ColorDifference, FromColor, Lab, Oklch, Srgb};
+use palette::{encoding::Srgb, white_point::D65, ColorDifference, FromColor, Hsv, Lab};
 use rayon::prelude::*;
 use serde::Serialize;
 
@@ -152,43 +152,43 @@ impl ColorName {
     }
 
     fn as_default_lab(&self) -> Lab<D65, f64> {
-        let shade_l = |n| Oklch::<f64>::max_l() * n as f64 / 8.0;
-        let bright_l = Oklch::<f64>::max_l() * 0.9;
-        let dark_l = Oklch::<f64>::max_l() * 0.7;
+        let shade_v = |n| Hsv::<Srgb, f64>::max_value() * n as f64 / 8.0;
+        let bright_v = Hsv::<Srgb, f64>::max_value() * 1.;
+        let dark_v = Hsv::<Srgb, f64>::max_value() * 0.50;
 
-        let c = Oklch::<f64>::max_chroma();
+        let s = Hsv::<Srgb, f64>::max_saturation();
         let h = self.default_hue().unwrap_or(0.0);
 
         let rgb = match self {
             // shades
-            Self::Black0 => Oklch::new(shade_l(1), 0.0, 0.0),
-            Self::Black1 => Oklch::new(shade_l(2), 0.0, 0.0),
-            Self::Black2 => Oklch::new(shade_l(3), 0.0, 0.0),
-            Self::Black3 => Oklch::new(shade_l(4), 0.0, 0.0),
-            Self::White0 => Oklch::new(shade_l(5), 0.0, 0.0),
-            Self::White1 => Oklch::new(shade_l(6), 0.0, 0.0),
-            Self::White2 => Oklch::new(shade_l(7), 0.0, 0.0),
-            Self::White3 => Oklch::new(shade_l(8), 0.0, 0.0),
+            Self::Black0 => Hsv::new(0.0, 0.0, shade_v(1)),
+            Self::Black1 => Hsv::new(0.0, 0.0, shade_v(2)),
+            Self::Black2 => Hsv::new(0.0, 0.0, shade_v(3)),
+            Self::Black3 => Hsv::new(0.0, 0.0, shade_v(4)),
+            Self::White0 => Hsv::new(0.0, 0.0, shade_v(5)),
+            Self::White1 => Hsv::new(0.0, 0.0, shade_v(6)),
+            Self::White2 => Hsv::new(0.0, 0.0, shade_v(7)),
+            Self::White3 => Hsv::new(0.0, 0.0, shade_v(8)),
 
             // normal colors
-            Self::Red => Oklch::new(bright_l, c, h),
-            Self::Orange => Oklch::new(bright_l, c, h),
-            Self::Yellow => Oklch::new(bright_l, c, h),
-            Self::Green => Oklch::new(bright_l, c, h),
-            Self::Cyan => Oklch::new(bright_l, c, h),
-            Self::Blue => Oklch::new(bright_l, c, h),
-            Self::Purple => Oklch::new(bright_l, c, h),
-            Self::Pink => Oklch::new(bright_l, c, h),
+            Self::Red
+            | Self::Orange
+            | Self::Yellow
+            | Self::Green
+            | Self::Cyan
+            | Self::Blue
+            | Self::Purple
+            | Self::Pink => Hsv::new(h, s, bright_v),
 
             // dark colors
-            Self::DarkRed => Oklch::new(dark_l, c, h),
-            Self::DarkOrange => Oklch::new(dark_l, c, h),
-            Self::DarkYellow => Oklch::new(dark_l, c, h),
-            Self::DarkGreen => Oklch::new(dark_l, c, h),
-            Self::DarkCyan => Oklch::new(dark_l, c, h),
-            Self::DarkBlue => Oklch::new(dark_l, c, h),
-            Self::DarkPurple => Oklch::new(dark_l, c, h),
-            Self::DarkPink => Oklch::new(dark_l, c, h),
+            Self::DarkRed
+            | Self::DarkOrange
+            | Self::DarkYellow
+            | Self::DarkGreen
+            | Self::DarkCyan
+            | Self::DarkBlue
+            | Self::DarkPurple
+            | Self::DarkPink => Hsv::new(h, s, dark_v),
         };
 
         Lab::from_color(rgb)
@@ -259,7 +259,7 @@ impl Palette {
         self.colors
             .iter()
             .map(|(k, v)| {
-                let rgb = Srgb::from_color(*v);
+                let rgb = palette::Srgb::from_color(*v);
                 let red_byte = (rgb.red * 255.0) as u8;
                 let green_byte = (rgb.green * 255.0) as u8;
                 let blue_byte = (rgb.blue * 255.0) as u8;
@@ -357,7 +357,7 @@ fn get_initial_centroids(src_img: DynamicImage) -> Palette {
 
             let rgb = val.to_rgb();
             let rgb_slice = rgb.channels();
-            let palette_srgb = Srgb::from_components((
+            let palette_srgb = palette::Srgb::from_components((
                 rgb_slice[0] as f64 / u8::MAX as f64,
                 rgb_slice[1] as f64 / u8::MAX as f64,
                 rgb_slice[2] as f64 / u8::MAX as f64,
