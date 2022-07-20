@@ -109,19 +109,17 @@ impl ColorName {
     }
 
     fn default_hue(&self) -> Option<f64> {
-        let stop = match self {
-            Self::Red | Self::DarkRed => Some(0),
-            Self::Orange | Self::DarkOrange => Some(1),
-            Self::Yellow | Self::DarkYellow => Some(2),
-            Self::Green | Self::DarkGreen => Some(3),
-            Self::Cyan | Self::DarkCyan => Some(4),
-            Self::Blue | Self::DarkBlue => Some(5),
-            Self::Purple | Self::DarkPurple => Some(6),
-            Self::Pink | Self::DarkPink => Some(7),
-            _ => return None, // shades have no hue
-        };
-
-        stop.map(|s| s as f64 * 45.0) // assuming 8 different stops; this goes around the cylinder
+        match self {
+            Self::Red | Self::DarkRed => Some(0.),
+            Self::Orange | Self::DarkOrange => Some(30.),
+            Self::Yellow | Self::DarkYellow => Some(60.),
+            Self::Green | Self::DarkGreen => Some(120.),
+            Self::Cyan | Self::DarkCyan => Some(180.),
+            Self::Blue | Self::DarkBlue => Some(240.),
+            Self::Purple | Self::DarkPurple => Some(275.),
+            Self::Pink | Self::DarkPink => Some(300.),
+            _ => None, // shades have no hue
+        }
     }
 
     fn as_str(&self) -> &'static str {
